@@ -12,6 +12,8 @@ set /A vSilent=0
 set /A vRollback=0
 set paramAux=%*
 
+set diretorio=%~dp0
+
 cls
 echo.
 echo Publicador
@@ -46,7 +48,7 @@ for %%a in (%*) do (
 	)
 )
 
- call :testeConfig
+call :testeConfig
 call :leConfig
 call :showListaApps
 
@@ -68,14 +70,14 @@ goto :eof
 
 rem Verifica se existe arquivo de config
 :testeConfig
-	if not exist "%systemroot%/pubsettings.ini" (
+	if not exist "%diretorio%\pubsettings.ini" (
 		set /A vErro=1
 	) 
 exit /b
 
 rem Lê arquivo de config e pede Apps
 :leConfig
-	for /f "tokens=1,2 delims==" %%G in (%systemroot%/pubsettings.ini) do set %%G=%%H
+	for /f "tokens=1,2 delims==" %%G in (%diretorio%\pubsettings.ini) do set %%G=%%H
 
 	rem Direciona para a pasta
 	pushd %source%
