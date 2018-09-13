@@ -54,16 +54,16 @@ call :showListaApps
 
 set /a index=%index%-1
 
-call :fazBackup
-call :publica
-
-rem if vRollback==0 (
-rem 	call :fazBackup
-rem 	call :publica
-rem ) else (
-rem 	call :listaVersoes
-rem 	call :fazRollback
-rem )
+echo Rollback %vRollback%
+if vRollback==0 (
+	echo -------------- Publica
+	call :fazBackup
+	call :publica
+) else (
+	echo -------------- Rollback
+	call :listaVersoes
+	call :fazRollback
+)
 
 call :fim %vErro%
 goto :eof
