@@ -8,8 +8,9 @@ title Publicacao + Backup (%username%)
 %=Do not remove this line=%
 )
 set /A vErro=0
-set /A vSilent=0
+set /A vSilent=1
 set /A vRollback=0
+set paramXCopy=/e /i /h /r /y
 set paramAux=%*
 
 set diretorio=%~dp0
@@ -29,9 +30,9 @@ for %%a in (%*) do (
 	)
 	set param=%%a
 	if "!param:~0,1!"=="-" (
-		if not "!param:s=!"=="!param!" (
-			set /A vSilent=1
-			set paramAux=!paramAux:s=!
+		if not "!param:v=!"=="!param!" (
+			set /A vSilent=0
+			set paramAux=!paramAux:v=!
 		)
 
 		if not "!param:r=!"=="!param!" (
@@ -48,19 +49,20 @@ for %%a in (%*) do (
 	)
 )
 
+if %vSilent%==1 (
+	set paramXCopy=%paramXCopy% /q
+)
+
 call :testeConfig
 call :leConfig
 call :showListaApps
 
 set /a index=%index%-1
 
-echo Rollback %vRollback%
-if vRollback==0 (
-	echo -------------- Publica
+if %vRollback%==0 (
 	call :fazBackup
 	call :publica
 ) else (
-	echo -------------- Rollback
 	call :listaVersoes
 	call :fazRollback
 )
@@ -111,8 +113,10 @@ exit /b
 exit /b
 
 :fazBackup
+	echo ---^> Fazendo Backup
 	for /l %%n in (0,1,%index%) do (
-		xcopy /e /i /h /r /y "%prod%!App[%%n]!" "%prod%_backup\!App[%%n]!_%date:~6,4%%date:~3,2%%date:~0,2%_%time:~0,2%%time:~3,2%%time:~6,2%_backup"
+		echo !App[%%n]!
+		xcopy %paramXCopy% "%prod%!App[%%n]!" "%prod%_backup\!App[%%n]!_%date:~6,4%%date:~3,2%%date:~0,2%_%time:~0,2%%time:~3,2%%time:~6,2%_backup"
 	)
 exit /b
 
@@ -125,8 +129,11 @@ exit /b
 exit /b
 
 :publica
+	echo.
+	echo ---^> Publicando
 	for /l %%n in (0,1,%index%) do (
-		xcopy /e /i /h /r /y "%source%!App[%%n]!" "%prod%!App[%%n]!"
+		echo !App[%%n]!
+		xcopy %paramXCopy% "%source%!App[%%n]!" "%prod%!App[%%n]!"
 	)	
 exit /b
 
@@ -153,6 +160,8 @@ exit /b
 eixt /b
 
 :finaliza
+	echo.
+	echo.
 	echo. -Finalizado
 	echo.
 exit /b
@@ -164,8 +173,8 @@ rem Lista de Parametros
 	echo    -r
 	echo       Faz rollback da aplicação
 	echo.
-	echo    -s
-	echo       Faz rollback da aplicação
+	echo    -v
+	echo       Ativa verbosidade
 	echo.
 	echo    --help:
-	echo       Mostra essa tela
+	echo       Mostra tela de ajuda
