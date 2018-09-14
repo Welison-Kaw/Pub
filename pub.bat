@@ -12,6 +12,9 @@ set /A vSilent=1
 set /A vRollback=0
 set paramXCopy=/e /i /h /r /y
 set paramAux=%*
+set dirTeste=
+set dirProd=
+set dirLog=
 
 set diretorio=%~dp0
 
@@ -53,7 +56,11 @@ if %vSilent%==1 (
 	set paramXCopy=%paramXCopy% /q
 )
 
+:inicioConfig
 call :testeConfig
+
+goto :eof
+
 call :leConfig
 call :showListaApps
 
@@ -72,9 +79,38 @@ goto :eof
 
 rem Verifica se existe arquivo de config
 :testeConfig
+	echo dirTeste = %dirTeste%
+	echo dirProd = %dirProd%
+	echo dirLog = %dirLog%
+	echo -------------
+	set _tempvar=
 	if not exist "%diretorio%\pubsettings.ini" (
-		set /A vErro=1
-	) 
+		rem if "%dirTeste%"=="" ( call :setDirSettings )
+		rem if "%dirProd%"=="" ( call :setDirSettings )
+		rem if "%dirLog%"=="" ( call :setDirSettings )
+		if "%dirTeste%"=="" set _tempvar=1
+		if "%dirProd%"=="" set _tempvar=1
+		if "%dirLog%"=="" set _tempvar=1
+		if "!_tempvar!"=="1" ( goto :setDirSettings )
+		echo _tempvar=!_tempvar!
+		
+		echo teste=%dirTeste% >> %diretorio%\pubsettings.ini
+		rem echo prod=%dirProd% >> %diretorio%\pubsettings.ini
+		rem echo log=%dirLog% >> %diretorio%\pubsettings.ini
+		goto :inicioConfig
+	)
+	echo -------------
+	echo dirTeste = %dirTeste%
+	echo dirProd = %dirProd%
+	echo dirLog = %dirLog%
+exit /b
+
+:setDirSettings
+	echo Entrou no setDirSettings
+	if "%dirTeste%"=="" ( set /p dirTeste=Diretório do teste:)
+	if "%dirProd%"=="" ( set /p dirProd=Diretório do produção: )
+	if "%dirLog%"=="" ( set /p dirLog=Diretório do log: )
+	goto :testeConfig
 exit /b
 
 rem Lê arquivo de config e pede Apps
@@ -121,6 +157,9 @@ exit /b
 exit /b
 
 :listaVersoes
+	pushd %source%
+	dir %prod%_backup\zzz_*
+	popd
 	echo Versoes
 exit /b
 
